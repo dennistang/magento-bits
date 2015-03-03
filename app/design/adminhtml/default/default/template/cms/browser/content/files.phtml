@@ -34,13 +34,28 @@
 <?php
 $_width  = $this->getImagesWidth();
 $_height = $this->getImagesHeight();
+$storage = Mage::getModel('cms/wysiwyg_images_storage');
+$targetDir = $storage->getHelper()->getCurrentPath(); //getThumbsPath($file);
+$baseMediaUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA);
+$mediaRootDir = Mage::getConfig()->getOptions()->getMediaDir();
 ?>
 <?php if ($this->getFilesCount() > 0): ?>
     <?php foreach ($this->getFiles() as $file): ?>
     <div class="filecnt" id="<?php echo $this->getFileId($file) ?>">
         <p class="nm" style="height:<?php echo $_height ?>px;width:<?php echo $_width ?>px;">
-        <?php if($this->getFileThumbUrl($file)):?>
-            <img src="<?php echo $this->getFileThumbUrl($file) ?>" alt="<?php echo $this->getFileName($file) ?>"/>
+        <?php
+        $thumbFilename = $file->getBasename();
+        $targetFile = $storage->getThumbsPath($targetDir.DS.$thumbFilename) . DS . $thumbFilename;
+
+        if(file_exists($targetFile)) {
+            $thumbFilenameLocation = substr($targetFile, strlen($mediaRootDir));
+            $thumbUrl = $baseMediaUrl.$thumbFilenameLocation;
+        } else {
+            $thumbUrl = $this->getFileThumbUrl($file);
+        }
+
+        if(!empty($thumbUrl)):?>
+            <img src="<?php echo $thumbUrl ?>" alt="<?php echo $this->getFileName($file) ?>"/>
         <?php endif; ?>
         </p>
         <?php if($this->getFileWidth($file)): ?>
